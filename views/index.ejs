@@ -1,0 +1,19 @@
+<%- layout('layout.ejs') %>
+<h1><%- title %></h1>
+<p>This is from: <%- title %></p>
+
+<form name="form1" method="POST" action="/login">
+    <table>
+        <tr>
+        <td>Email</td>
+        <td><input type="text" name="email" ></td>
+        </tr>
+        <tr>
+        <td>Password</td>
+        <td><input type="text" name="pwd" ></td>
+        </tr>
+        <tr>
+        <td colspan="2"><input type="submit" value="login" ></td>
+        </tr>
+    </table>
+    </form>  
