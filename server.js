@@ -9,6 +9,10 @@ var boats = require("./routes/boats");
 var users = require("./routes/users");  
 var config = require('./config');
 
+// adding passport Authentication
+const passport = require('passport');
+const localStrategy = require('passport-local').Strategy 
+
 function checkAuth (req, res, next) {
 	console.log('checkAuth ' + req.url);
 
@@ -21,10 +25,6 @@ function checkAuth (req, res, next) {
 
 	next();
 }
-
-
-
-
 
 var app = express();
 
