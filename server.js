@@ -18,13 +18,14 @@ function checkAuth (req, res, next) {
 
 	// don't serve /secure to those not logged in
 	// you should add to this list, for each and every secure url
-	if (req.url === '/secure' && (!req.session || !req.session.authenticated)) {
-		res.render('unauthorised', { status: 403 });
+	if ((req.url === '/secure' || req.url === '/users/list' || req.url === '/boats/list') && (!req.session || !req.session.authenticated)) {
+		res.render('unauthorised', { title: "unauthorised Page" });
 		return;
 	}
 
 	next();
 }
+
 
 var app = express();
 
@@ -51,9 +52,6 @@ app.use(validator())
 app.use(cookieParser())
 app.use(session({secret: 'max', saveUninitialized: false, resave: false}))
 app.use(checkAuth)
-
-
-
 
 app.use("/", index);
 app.use("/boats", boats);

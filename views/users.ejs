@@ -1,0 +1,17 @@
+<!-- <%- layout('layout.ejs') %> -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+
+<a href="/users/list">User List</a>
+<a href="/boats/list">Boat List</a>
+<a href="/logout">Logout</a>
+
+<table class="table">
+        <th>UserName</th>
+        <th>Password</th>
+        <% for(var i=0; i < users.length; i++) { %>
+        <tr scope="row">
+         <td><%- users[i].Email %></td>
+         <td><%- users[i].Password %></td>
+         </tr>
+        <% } %>
+  </table>

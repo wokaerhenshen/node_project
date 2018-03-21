@@ -10,10 +10,15 @@ router.get("/list", (req, res, next) => {
     db.boat.find( (err, data) => {
         if (err)
             res.send(err);
-        
-        res.json(data);
+        else {
+            res.render("boats",{boats:data,title:"Boats List"})
+        }
     })
 });
+
+router.get("/addBoat",(req, res, next)=>{
+    res.render("addBoat",{title:"Add Boat"})
+})
 
 //get single boat 
 router.get("/detail/:id",(req,res,next)=>{
@@ -39,24 +44,35 @@ router.post("/create",(req,res,next)=>{
             if (err){
                 res.send(err)
             }
-            res.send("true")
+            res.redirect("/boats/list")
         })
     }
 })
 
 //delete boat
-router.delete("/delete/:id",(req,res,next)=>{
+router.get("/delete/:id",(req,res,next)=>{
     db.boat.remove({ _id:mongojs.ObjectId(req.params.id)},function(err,data){
         if (err){
             res.send(err)
         }
-        res.send("true")
+        res.redirect("/boats/list")
     
     })
 })
 
+router.get("/update/:id",(req,res,next)=>{
+    db.boat.findOne({_id:mongojs.ObjectId(req.params.id)},
+    function(err,data){
+        if (err){
+            res.send(err);
+        }
+        res.render("updateBoat",{_id:data._id, BoatName:data.BoatName,BoatLengthInFeet:data.BoatLengthInFeet,
+        BoatYear:data.BoatYear,BoatCapacityInPeople:data.BoatCapacityInPeople,BoatPictureUrl:data.BoatPictureUrl})
+    });
+})
+
 //update boat
-router.put("/update/:id",(req,res,next)=>{
+router.post("/update/:id",(req,res,next)=>{
     var boat = req.body
     var changedBoat = {}
     if (boat.BoatName){
@@ -86,7 +102,7 @@ router.put("/update/:id",(req,res,next)=>{
                 if (err){
                     res.send(err)
                 }
-                res.send("true")
+                res.redirect("/boats/list")
            
         })
     }

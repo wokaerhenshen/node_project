@@ -10,8 +10,11 @@ router.get("/list", (req, res, next) => {
     db.users.find( (err, data) => {
         if (err)
             res.send(err);
+        else {
+            res.render("users",{users:data,title:"User List"})
+        }
         
-        res.json(data);
+        
     })
 });
 
@@ -25,6 +28,23 @@ function(err,data){
     res.json(data)
 });
 });
+
+//get single user based on email
+router.get("/detailByEmail/:email",(req,res,next)=>{
+
+    var query = { 'Email' : req.params.email };
+    console.log(query);
+    console.log('query');
+
+    db.users.findOne(query,
+function(err,data){
+    if (err){
+        res.send(err);
+    }
+    res.json(data)
+});
+});
+
 
 //create user
 router.post("/create",(req,res,next)=>{
