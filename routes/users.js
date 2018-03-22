@@ -56,7 +56,7 @@ router.post("/create",(req,res,next)=>{
             {"error:":"bad data, can't insert"}
         )
     }else{
-        user.Role = "Member"
+        user.Role = "member"
         user.CreationDate = new Date()
         db.users.save(user,function(err,data){
             if (err){

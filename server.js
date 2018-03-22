@@ -6,7 +6,8 @@ var path = require("path");
 var bodyParser = require("body-parser");
 var index = require("./routes/index");
 var boats = require("./routes/boats");  
-var users = require("./routes/users");  
+var users = require("./routes/users");
+var angular = require("./routes/angularStuff")  
 var config = require('./config');
 
 // adding passport Authentication
@@ -22,7 +23,7 @@ function checkAuth (req, res, next) {
 		res.render('unauthorised', { title: "unauthorised Page" });
 		return;
 	}
-
+    console.log("I have passed the auth!")
 	next();
 }
 
@@ -56,6 +57,7 @@ app.use(checkAuth)
 app.use("/", index);
 app.use("/boats", boats);
 app.use("/users", users);
+app.use("/angular",angular)
 
 
 app.listen(config.port, function() {

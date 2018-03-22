@@ -36,28 +36,37 @@ function(req, res, next){
     if (err){
         //alert("wrong email")
         res.redirect("/")
+        return 
     }else {
         //res.send(data.Password)
-        res.send(JSON.stringify(data))
-        if (JSON.stringify(data) == "null"){
+        // res.send(JSON.stringify(data))
+        // if (JSON.stringify(data) == "null"){
+        //     res.redirect("/")
+        // }
+        if (!data){
+            console.log("empty account")
             res.redirect("/")
+            return 
         }
         
          
        if (req.body.pwd === data.Password  ) {
            if (data.Role == "admin" ){
-            req.session.authenticated = true;
-            res.redirect('/users/list');
+            req.session.authenticated = true
+            res.redirect('/users/list')
+            return 
            }
            else {
            // alert("you are not admin")
-            res.redirect('/');
+            res.redirect('/')
+            return 
            }
 
        }else {
        // req.flash('error', 'Username and password are incorrect');
       // alert("wrong pwd")
         res.redirect('/');
+        return 
        }
     }
     // res.send(data.Password)
