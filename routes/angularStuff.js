@@ -20,7 +20,8 @@ function(req, res, next){
     }else {
         if (!data){
             console.log("empty account")
-            res.status(500).send("empty account")
+            res.status(500)
+            res.send({err:"empty account!"})
             
             return 
         }
@@ -45,18 +46,16 @@ function(req, res, next){
            }
            else {
            // alert("you are not admin")
-           res.json(
-            {"error:":"you are not member!"}
-            )
+           res.status(500)
+           res.send({err:"You are not memeber!"})
             return 
            }
 
        }else {
        // req.flash('error', 'Username and password are incorrect');
       // alert("wrong pwd")
-      res.json(
-        {"error:":"wrong password!"}
-        )
+      res.status(500)
+      res.send({err:"wrong password"})
         return 
        }
     }
@@ -69,15 +68,28 @@ function(req, res, next){
 router.post("/Register",function(req, res, next){
     var user = req.body
     //if (!user.)
-    user.Role = "member"
-    user.CreationDate = new Date()
-    db.users.save(user,function(err,data){
-        if (err){
-            res.send(err)
-        }
-        res.send("true")
-    })
 
+    if (!user.Email || !user.Password || !user.FirstName || !user.LastName || !user.Address.street || !user.Address.city || !user.Address.province || !user.Address.postalCode || !user.Address.country){
+        console.log("info not completed")
+       // res.status(500).send("info incompleted")
+       res.status(500)
+       res.send({err:"insufficient info"})
+       return 
+
+    }else {
+        user.Role = "member"
+        user.CreationDate = new Date()
+        db.users.save(user,function(err,data){
+            if (err){
+                res.status(500)
+                res.send({err:"err occur"})
+                return 
+            }
+            console.log("successfully craeted user")
+            res.status(200).send("success")
+            return 
+        })
+    }
 })
 
 
