@@ -13,8 +13,6 @@ router.get("/list", (req, res, next) => {
         else {
             res.render("users",{users:data,title:"User List"})
         }
-        
-        
     })
 });
 
