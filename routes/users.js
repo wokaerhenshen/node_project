@@ -5,7 +5,7 @@ var config = require("../config/");
 var db = mongojs(config.database);
 
 //get users list
-router.get("/list", (req, res, next) => {
+router.get("/list",ensureAuthenticated, (req, res, next) => {
     
     db.users.find( (err, data) => {
         if (err)
@@ -19,7 +19,7 @@ router.get("/list", (req, res, next) => {
 });
 
 //get single user 
-router.get("/detail/:id",(req,res,next)=>{
+router.get("/detail/:id",ensureAuthenticated,(req,res,next)=>{
     db.users.findOne({_id:mongojs.ObjectId(req.params.id)},
 function(err,data){
     if (err){
@@ -30,7 +30,7 @@ function(err,data){
 });
 
 //get single user based on email
-router.get("/detailByEmail/:email",(req,res,next)=>{
+router.get("/detailByEmail/:email",ensureAuthenticated,(req,res,next)=>{
 
     var query = { 'Email' : req.params.email };
     console.log(query);
@@ -47,7 +47,7 @@ function(err,data){
 
 
 //create user
-router.post("/create",(req,res,next)=>{
+router.post("/create",ensureAuthenticated,(req,res,next)=>{
     var user = req.body
 
     if (!user.Email || !user.Password){
@@ -66,5 +66,15 @@ router.post("/create",(req,res,next)=>{
         })
     }
 })
+
+function ensureAuthenticated(req, res, next) {
+    if (req.isAuthenticated()) {
+        return next();
+    } else {
+        req.flash('error_msg', "You are not logged in");
+        res.redirect('/');
+    }
+}
+
 
 module.exports = router;
