@@ -1,3 +1,9 @@
+<% if (typeof(errors) != "undefined") { %>
+    <% for (var error of errors){%>
+    <div class="alert alert-danger"><%= error.msg %></div>
+<% }}else {  %>
+    <div class="alert alert-danger">no errors for now</div>
+<% } %>
 <form name="form2" method="POST" action="/boats/create">
     <table>
         <tr>

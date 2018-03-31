@@ -3,14 +3,47 @@ var router = express.Router();
 var mongojs = require("mongojs");
 var config = require("../config/");
 var db = mongojs(config.database);
+var User = require("../models/user")
 var passport = require("passport")
-var local = require("passport-local").Strategy
+var LocalStrategy = require("passport-local").Strategy
 
 router.get("/", function(req, res, next) {
+
+
+    //create test user
+    // var testUser = new User({
+    //     FirstName: "Pacific",
+    //     LastName: "Boat Club",
+    //     Address: {
+    //         Street: "123 Seaside Road",
+    //         City: "Vancouver",
+    //         Province: "BC",
+    //         PostalCode: "V4R Y6T",
+    //         Country: "Canada"
+    //     },
+    //     Email: "a@a.a",
+    //     Password: "P@$$w0rd",
+    //     Role: "admin"
+        
+    // })
+
+    // User.createUser(testUser,function(err,user){
+    //     if (err){
+    //         res.status(500)
+    //         res.send({err:"err occur"})
+    //         return 
+    //     }
+    //     else {
+    //         console.log("successfully craeted user")
+    //         res.status(200)
+    //         res.json({ success: true});
+    //         return      
+    //     }
+    // })
     res.render("index",{title:"EXPRESS MONGO"})
 });
 
-router.get("/secure", function(req, res, next){
+router.get("/secure",ensureAuthenticated, function(req, res, next){
     res.render("secure",{title:"Secure Page"})
 })
 
@@ -19,59 +52,64 @@ router.get("/unauthorised", function(req, res, next){
 })
 
 router.get('/logout', function (req, res, next) {
-    delete req.session.authenticated;
-    res.redirect('/');
+    //delete req.session.authenticated;
+    req.logout();
+    //req.flash('success_msg', 'You are logged out.');
+    res.render("index",{title:"login Page",success:"you logged out"})
+   // res.redirect('/');
 });
 
-
-
+// hashed login method:
+passport.use(new LocalStrategy(
+    function(username, password, done) {
+      User.findOne({ Email: username }, function (err, user) {
+        if (err) { return done(err); }
+        if (!user) { return done(null, false, {message: 'Unknown User'}); }
+        User.comparePassword(password,user.Password,function(err,isMatch){
+            if (err) throw err
+            if (isMatch){
+                if (user.Role != "admin"){return done(null,false,{message: 'you are not admin'})}
+                return done(null, user)
+            }else {
+                return done(null, false, {message: 'Invalid Password'})
+            }
+        })
+      });
+    }
+  ));
 
 router.post("/login",
-function(req, res, next){
-  //  res.send(req.body.email)
-  
-    var query = { 'Email' : req.body.email };
-    db.users.findOne(query,
-    function(err,data){
-    if (err){
-        //alert("wrong email")
-        res.redirect("/")
-        return 
-    }else {
-        //res.send(data.Password)
-        // res.send(JSON.stringify(data))
-        // if (JSON.stringify(data) == "null"){
-        //     res.redirect("/")
-        // }
-        if (!data){
-            console.log("empty account")
-            res.redirect("/")
-            return 
-        }
-        
-         
-       if (req.body.pwd === data.Password  ) {
-           if (data.Role == "admin" ){
-            req.session.authenticated = true
-            res.redirect('/users/list')
-            return 
-           }
-           else {
-           // alert("you are not admin")
-            res.redirect('/')
-            return 
-           }
+passport.authenticate('local',{
+    successRedirect: '/boats/list', 
+    failureRedirect: '/',
+    failureFlash: true
 
-       }else {
-       // req.flash('error', 'Username and password are incorrect');
-      // alert("wrong pwd")
-        res.redirect('/');
-        return 
-       }
-    }
-    // res.send(data.Password)
-    
+}),
+function(req,res){
+    res.redirect('/')
+}
+)
+
+
+passport.serializeUser(function(user, done) {
+    done(null, user.id);
+  });
+  
+passport.deserializeUser(function (id, done) {
+    User.getUserById(id, function(err, user) {
+        done(err, user);
+    });
 });
-})
+
+function ensureAuthenticated(req, res, next) {
+    if (req.isAuthenticated()) {
+        return next();
+    } else {
+        req.flash('error_msg', "You are not logged in");
+        res.redirect('/');
+    }
+}
+
+
 
 module.exports = router;

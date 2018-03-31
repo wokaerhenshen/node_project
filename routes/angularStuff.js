@@ -1,67 +1,61 @@
-var express = require("express");
-var router = express.Router();
-var mongojs = require("mongojs");
-var config = require("../config/");
-var db = mongojs(config.database);
+var express = require("express")
+var router = express.Router()
+var mongojs = require("mongojs")
+var config = require("../config/")
+var db = mongojs(config.database)
+var User = require("../models/user")
+var Boat = require('../models/boat')
+var passport = require('passport')
+var jwt = require('jsonwebtoken')
 
-router.post("/login",
-function(req, res, next){
-  //  res.send(req.body.email)
-  
-    var query = { 'Email' : req.body.email };
-    db.users.findOne(query,
-    function(err,data){
-    if (err){
-        //alert("wrong email")
-        res.json(
-            {"error:":"error occur"}
-        )
-        return 
-    }else {
-        if (!data){
-            console.log("empty account")
-            res.status(500)
-            res.send({err:"empty account!"})
-            
-            return 
+//get all boats 
+router.get('/boats',passport.authenticate('jwt',{session:false}),function(req,res){
+    Boat.find(function(err,boats){
+        if (err){
+            res.send(err)
         }
-        
-         
-       if (req.body.pwd === data.Password) {
-           if (data.Role == "member" ){
-            req.session.authenticated = true
-            db.boat.find( (err, data) => {
-                if (err)
-                res.json(
-                    {"error:":err}
-                )
-                else {
-                    //res.status(200)
-                    console.log("now i will give you the data!")
-                    res.send(data)
+        res.json(boats)
+    })
+})
+
+
+router.post('/login',(req,res)=>{
+    User.findOne({
+        Email:req.body.email
+    },function(err,user){
+        if (err) throw err
+        if (!user){
+            res.status(500)
+            res.send({err:"empty account!"})    
+            return 
+        }else {
+            User.comparePassword(req.body.pwd,user.Password,function(err,isMatch){
+                if (err) throw err
+                if (isMatch){
+                    if (user.Role == "member"){
+
+                        console.log("login success")
+                        // create token
+                        var token = jwt.sign(user.toJSON(), config.secret, {
+                            expiresIn: 10080 // week in seconds
+                            
+                        });      
+                        res.status(200)
+                        //res.send({success:"you success"})
+                        res.json({ success: true, token: 'JWT ' + token });
+                        return     
+                    }else{
+                        res.status(500)
+                        res.send({err:"you are not member!"})                
+                    }
+                }else{
+                    res.status(500)
+                    res.send({err:"wrong password"})
+                    return    
                 }
             })
-            
-            return 
-           }
-           else {
-           // alert("you are not admin")
-           res.status(500)
-           res.send({err:"You are not memeber!"})
-            return 
-           }
-
-       }else {
-       // req.flash('error', 'Username and password are incorrect');
-      // alert("wrong pwd")
-      res.status(500)
-      res.send({err:"wrong password"})
-        return 
-       }
-    }
-    // res.send(data.Password)
-    
-});
+        }
+    })
 })
 
 
@@ -77,29 +71,50 @@ router.post("/Register",function(req, res, next){
        return 
 
     }else {
-        user.Role = "member"
-        user.CreationDate = new Date()
-        db.users.save(user,function(err,data){
+
+        User.getUserByEmail(req.body.Email,function(err, found){
             if (err){
                 res.status(500)
                 res.send({err:"err occur"})
                 return 
             }
-            console.log("successfully craeted user")
-            res.status(200).send("success")
-            return 
+            if (!found){
+                console.log("I didn't find this account")    
+                    var newUser = new User({
+                    FirstName: user.FirstName,
+                    LastName: user.LastName,
+                    Address: {
+                       Street: user.Address.street,
+                       City: user.Address.city,
+                       Province: user.Address.province,
+                       PostalCode: user.Address.postalCode,
+                       Country: user.Address.country
+                    },
+                    Email: user.Email,
+                    Password: user.Password,
+                    Role: "member"           
+                    })
+           
+                   User.createUser(newUser,function(err,user){
+                       if (err){
+                           res.status(500)
+                           res.send({err:"err occur"})
+                           return 
+                       }
+                       else {
+                           console.log("successfully craeted user")
+                           res.status(200)
+                           res.json({ success: true});
+                           return      
+                       }
+                   })
+            }else{
+                console.log("I find this account in database.")
+                res.status(500)
+                res.send({err:"Email existed"})
+                return 
+            }        
         })
-    }
+    }    
 })
-
-
-
-
-
-
-
-
-
-
-
 module.exports = router;

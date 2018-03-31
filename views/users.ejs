@@ -17,9 +17,10 @@
     var addreses = []
     var usersString = '<%- JSON.stringify(users) %>'
     var usersJson = JSON.parse(usersString)
-   // alert(usersJson.length)
+    //alert(usersJson.length)
     for (var x = 0; x < usersJson.length; x++) {
-        $.getJSON('http://maps.googleapis.com/maps/api/geocode/json?address='+usersJson[x].Address.Street+" "+usersJson[x].Address.City+" "+usersJson[x].Address.Province+" "+usersJson[x].Address.PostalCode+" "+usersJson[x].Address.Country+'&sensor=false', null, function (data) {
+      //alert(usersJson[x].Address[0].Street)
+        $.getJSON('http://maps.googleapis.com/maps/api/geocode/json?address='+usersJson[x].Address[0].Street+" "+usersJson[x].Address[0].City+" "+usersJson[x].Address[0].Province+" "+usersJson[x].Address[0].PostalCode+" "+usersJson[x].Address[0].Country+'&sensor=false', null, function (data) {
             if (data.results[0] !== undefined){
               var p = data.results[0].geometry.location
               var latlng = new google.maps.LatLng(p.lat, p.lng);
@@ -43,19 +44,15 @@
 <div id="map_canvas" style="    width: 100%;
 height: 500px;" ></div>
 
-
-
-
-
-
-
 <table class="table">
-        <th>UserName</th>
-        <th>Password</th>
+        <th>Email</th>
+        <th>FirstName</th>
+        <th>LastName</th>
         <% for(var i=0; i < users.length; i++) { %>
         <tr scope="row">
          <td><%- users[i].Email %></td>
-         <td><%- users[i].Password %></td>
+         <td><%- users[i].FirstName %></td>
+         <td><%- users[i].LastName %></td>
          </tr>
         <% } %>
 </table>
